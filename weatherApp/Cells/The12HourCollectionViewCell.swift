@@ -9,16 +9,30 @@ import UIKit
 
 class The12HourCollectionViewCell: UICollectionViewCell {
     
-    @IBOutlet weak var hourLabel: UILabel!
-    @IBOutlet weak var The12HourTemperatureLabel: UILabel!
-    @IBOutlet weak var The12HourImageView: UIImageView!
-    
-    
+    var hourLabel = UILabel()
+    var The12HourTemperatureLabel = UILabel()
+    var The12HourImageView = UIImageView()
  
 
-    override func awakeFromNib() {
-        super.awakeFromNib()
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        setupSubviews()
         setupConstraints()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func setupSubviews() {
+        // Add subviews to the cell's contentView
+        contentView.addSubview(hourLabel)
+        contentView.addSubview(The12HourTemperatureLabel)
+        contentView.addSubview(The12HourImageView)
+       
+
+        
     }
     
     func setupConstraints() {
@@ -36,10 +50,13 @@ class The12HourCollectionViewCell: UICollectionViewCell {
             hourLabel.heightAnchor.constraint(equalToConstant: 15),
             
             
+           
             // Image view constraints
             The12HourImageView.topAnchor.constraint(equalTo: hourLabel.bottomAnchor, constant: 7),
             The12HourImageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            The12HourImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            The12HourImageView.widthAnchor.constraint(equalToConstant: 50), // Adjust the width as needed
+            The12HourImageView.heightAnchor.constraint(equalTo: The12HourImageView.widthAnchor), // Square image
+
             // Assuming square image
             
            
@@ -54,5 +71,6 @@ class The12HourCollectionViewCell: UICollectionViewCell {
 
         // Step 3: Activate constraints
         NSLayoutConstraint.activate(constraints)
+        
     }
 }

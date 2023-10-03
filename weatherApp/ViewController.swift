@@ -22,11 +22,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     let loadingView                 = UIView()
     
     
-    @IBOutlet weak var the12HourCollectionView: UICollectionView!
+    var the12HourCollectionView: UICollectionView!
     
-    
-    //let apiKey = "i8MpoGveIdZPG3gDWasL7a1QVeh0BhrE"
-    let apiKey = "Br5Tsp8LESxMZWW2ks7RqJIXPWcztpkE"
+    let apiKey = "i8MpoGveIdZPG3gDWasL7a1QVeh0BhrE"
+    //let apiKey = "Br5Tsp8LESxMZWW2ks7RqJIXPWcztpkE"
     
     let locationManager = CLLocationManager()
     
@@ -49,14 +48,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     var currentConstraints: [NSLayoutConstraint] = []
     
     let customFont = UIFont(name: "Chocolate Bar Demo", size: 60) ?? UIFont.systemFont(ofSize: 60)
-
+    
+    
     
     
     
 //      MUSIM DODELAT:
 //    
 //    CATCH ERRORS
-//    CollectionView programatically
 //    
 //    
 //               !!!!
@@ -69,12 +68,26 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
         locationManager.delegate = self
         locationManager.startUpdatingLocation()
         locationManager.requestWhenInUseAuthorization()
         
+        
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal // optional, but you can set to .horizontal if needed
+        
+        // Initialize the collectionView with the frame and layout.
+        the12HourCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        the12HourCollectionView.register(The12HourCollectionViewCell.self, forCellWithReuseIdentifier: "The12HourCollectionViewCell")
+        
         the12HourCollectionView.dataSource = self
         the12HourCollectionView.delegate = self
+        
+        
+ 
+        
+     
         
 // Note: func NotificationCenter bellow reload data everytime the app is going active. func is off because limited API calls
 //      NotificationCenter.default.addObserver(self, selector: #selector(getDataWrapper), name: Notification.Name("getData"), object: nil)
@@ -95,6 +108,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
             print("getData from locationManager was called")
         }
     }
+    
+ 
+       
+    
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Error with location manager: \(error)")
@@ -206,7 +223,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         let url = URL(string: "https://dataservice.accuweather.com/forecasts/v1/hourly/12hour/\(locationCityKey)?apikey=\(apiKey)&metric=true")
         let the12HourForecastData =  try await AF.request(url!, method: .get).serializingDecodable([The12HourForecastElement].self).value
         the12HourForecast = the12HourForecastData
-        print("get12hourForecastData was called")
+        
         return the12HourForecastData
     }
     
@@ -224,6 +241,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         let calendar = Calendar.current
         
         cell.hourLabel.text = calendar.component(.hour, from: date).description
+        
         cell.The12HourTemperatureLabel.text = (" \(Int(the12HourForecast[indexPath.row].temperature3.value.rounded()).description)°")
         cell.The12HourImageView.image       = UIImage(named: the12HourForecast[indexPath.row].weatherIcon.description)
         cell.The12HourImageView.contentMode = .scaleAspectFit
@@ -277,7 +295,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     @MainActor
     func getData() async {
         do {
-                self.addSubviews()
+           
+            self.addSubviews()
             try await getForecastKey()
             try await getActualWeatherData()
             try await get12hourForecastData()
@@ -288,7 +307,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
           //      self.loadingView.isHidden = true
                self.hideLoadingView()
             }
- 
+            
+          
         } catch {
             print(error)
         }
@@ -317,6 +337,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     }
     
     func setupConstraintsForCompactWidthRegularHeight() -> [NSLayoutConstraint] {
+        
+        print("Compact Width - Regular Height.....was activated")
         // Set up constraints for iPhone portrait
         return [
             
@@ -329,16 +351,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
             backgroundImage.topAnchor.constraint(equalTo: view.topAnchor),
             backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            
-            weatherImage.centerXAnchor.constraint(
+            localizationLabel.centerXAnchor.constraint(
                 equalTo: view.centerXAnchor),
-            weatherImage.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 280),
-            weatherImage.widthAnchor.constraint(
-                equalToConstant: 350),
-            weatherImage.heightAnchor.constraint(
-                equalToConstant: 350),
-            
+            localizationLabel.topAnchor.constraint(
+                equalTo: view.topAnchor, constant: 100),
+            localizationLabel.widthAnchor.constraint(
+                equalToConstant: 200),
+            localizationLabel.heightAnchor.constraint(
+                equalToConstant: 15),
             
             mainActualTemperatureLabel.centerXAnchor.constraint(
                 equalTo: view.centerXAnchor),
@@ -348,8 +368,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
                 equalToConstant: 400),
             mainActualTemperatureLabel.heightAnchor.constraint(
                 equalToConstant: 250),
-            
-            
             
             actualWeatherText1Label.centerXAnchor.constraint(
                 equalTo: view.centerXAnchor),
@@ -361,16 +379,16 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
                 equalToConstant: 35),
             
             
-            localizationLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            localizationLabel.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 100),
-            localizationLabel.widthAnchor.constraint(
-                equalToConstant: 200),
-            localizationLabel.heightAnchor.constraint(
-                equalToConstant: 15),
+          
+
+            weatherImage.topAnchor.constraint(
+                equalTo: actualWeatherText1Label.bottomAnchor, constant: 0),
+            weatherImage.leftAnchor.constraint(equalTo: view.leftAnchor),
+            weatherImage.rightAnchor.constraint(equalTo: view.rightAnchor),
+            weatherImage.bottomAnchor.constraint(equalTo: the12HourHeadLineLabel.topAnchor),
             
-            
+
+        
             the12HourHeadLineLabel.centerXAnchor.constraint(
                 equalTo: view.centerXAnchor),
             the12HourHeadLineLabel.bottomAnchor.constraint(
@@ -381,8 +399,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
                 equalToConstant: 20),
             
             
-            the12HourCollectionView.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
+//            
+//            the12HourCollectionView.centerXAnchor.constraint(
+//                equalTo: view.centerXAnchor),
             the12HourCollectionView.bottomAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
             the12HourCollectionView.leftAnchor.constraint(
@@ -398,7 +417,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     
     func setupConstraintsForCompactWidthCompactHeight() -> [NSLayoutConstraint] {
         // Set up constraints for iPhone landscape
-        // ...
+        print("Compact Width - Compact Height.....was activated")
         return[
             
    
@@ -478,7 +497,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     
     func setupConstraintsForRegularWidthCompactHeight() -> [NSLayoutConstraint] {
         // Set up constraints for iPhone MAX landscape
-        // ...
+        print("Regular Width - Compact Height.....was activated")
         return [
             
             backgroundImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -540,8 +559,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
                 equalToConstant: 25),
             
             
-            the12HourCollectionView.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
+//            the12HourCollectionView.centerXAnchor.constraint(
+//                equalTo: view.centerXAnchor),
             the12HourCollectionView.bottomAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
             the12HourCollectionView.leftAnchor.constraint(
@@ -558,7 +577,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     
     func setupConstraintsForRegularWidthRegularHeight() -> [NSLayoutConstraint] {
         // Set up constraints for iPad landscape
-        // ...
+        print("Regular Width - Regular Height.....was activated")
         return [
             
 
@@ -573,16 +592,21 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
             backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             
-            weatherImage.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            weatherImage.topAnchor.constraint(
-                equalTo: actualWeatherText1Label.bottomAnchor, constant: 0),
-            weatherImage.bottomAnchor.constraint(equalTo: the12HourHeadLineLabel.topAnchor, constant: 0),
-            
-            weatherImage.widthAnchor.constraint(
-                equalToConstant: 500),
+//            weatherImage.centerXAnchor.constraint(
+//                equalTo: view.centerXAnchor),
+//            weatherImage.topAnchor.constraint(
+//                equalTo: actualWeatherText1Label.bottomAnchor, constant: 0),
+//            weatherImage.bottomAnchor.constraint(equalTo: the12HourHeadLineLabel.topAnchor, constant: 0),
+//            
+//            weatherImage.widthAnchor.constraint(
+//                equalToConstant: 500),
             
       
+            weatherImage.topAnchor.constraint(
+                equalTo: actualWeatherText1Label.bottomAnchor, constant: 0),
+            weatherImage.leftAnchor.constraint(equalTo: view.leftAnchor),
+            weatherImage.rightAnchor.constraint(equalTo: view.rightAnchor),
+            weatherImage.bottomAnchor.constraint(equalTo: the12HourHeadLineLabel.topAnchor),
             
             mainActualTemperatureLabel.centerXAnchor.constraint(
                 equalTo: view.centerXAnchor),
@@ -625,8 +649,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
                 equalToConstant: 20),
             
             
-            the12HourCollectionView.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
+//            the12HourCollectionView.centerXAnchor.constraint(
+//                equalTo: view.centerXAnchor),
             the12HourCollectionView.bottomAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
             the12HourCollectionView.leftAnchor.constraint(
@@ -635,13 +659,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
                 equalTo: view.rightAnchor, constant: -20),
             the12HourCollectionView.heightAnchor.constraint(
                 equalToConstant: 140),
-            
-//            loadingView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            loadingView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//            loadingView.leftAnchor.constraint(equalTo: view.leftAnchor),
-//            loadingView.rightAnchor.constraint(equalTo: view.rightAnchor),
-//            loadingView.topAnchor.constraint(equalTo: view.topAnchor),
-//            loadingView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ]
     }
     
@@ -665,6 +682,17 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         backgroundImage.contentMode = .scaleAspectFill
         
       
+        self.localizationLabel.text   = self.locationName.description
+        localizationLabel.textColor   = .white
+        localizationLabel.shadowColor = .black
+        localizationLabel.font        = customFont.withSize(20)
+        localizationLabel.textAlignment = .center
+        //setup shadow
+        localizationLabel.layer.shadowColor     = UIColor.black.cgColor
+        localizationLabel.layer.shadowOffset    = CGSize(width: 0, height: 4) // You can adjust this
+        localizationLabel.layer.shadowRadius    = 10 // This makes the shadow wider/larger
+        localizationLabel.layer.shadowOpacity   = 0.6 // Adjust the opacity as needed
+        
         
         let actualTemperature = Int(self.actualWeather[0].temperature2!.metric.value.rounded()).description
         self.mainActualTemperatureLabel.text = (" \(actualTemperature)°")
@@ -693,16 +721,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         actualWeatherText1Label.layer.shadowOffset  = CGSize(width: 0, height: 4) // You can adjust this
         actualWeatherText1Label.layer.shadowRadius  = 10 // This makes the shadow wider/larger
         actualWeatherText1Label.layer.shadowOpacity = 0.6 // Adjust the opacity as needed
-        
-        self.localizationLabel.text   = self.locationName.description
-        localizationLabel.textColor   = .white
-        localizationLabel.shadowColor = .black
-        localizationLabel.font        = customFont.withSize(20)
-        //setup shadow
-        localizationLabel.layer.shadowColor     = UIColor.black.cgColor
-        localizationLabel.layer.shadowOffset    = CGSize(width: 0, height: 4) // You can adjust this
-        localizationLabel.layer.shadowRadius    = 10 // This makes the shadow wider/larger
-        localizationLabel.layer.shadowOpacity   = 0.6 // Adjust the opacity as needed
         
         
         weatherImage.image               = UIImage(named: weatherIconNumber.description)
