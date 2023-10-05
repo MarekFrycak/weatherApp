@@ -11,7 +11,7 @@ struct LocalizedInfo: Codable {
     let key: String
     let localizedName, englishName, primaryPostalCode: String?
     let region, country: Country
-    let parentCity: ParentCity
+    let parentCity: ParentCity?
     
     enum CodingKeys: String, CodingKey {
         case key = "Key"
