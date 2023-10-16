@@ -58,17 +58,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     }
     // Get device location
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        //print("locationManager was called")
         if let location = locations.last {
             let latitude    = location.coordinate.latitude
             let longitude   = location.coordinate.longitude
             curentLatitude  = latitude
             curentLongitude = longitude
-            //print("curren Latitude:" + "\(curentLatitude)")
-            //print("curren Latitude:" + "\(curentLongitude)")
             manager.stopUpdatingLocation()
             getDataWrapper()
-            //print("getData from locationManager was called")
         }
     }
     // locationManager error handling
@@ -186,13 +182,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         else {
             throw CustomError.invalidURL
         }
-        //print(url)
         
         do {
             let result = try await AF.request(url, method: .get).serializingDecodable(LocalizedInfo.self).value
             locationCityKey = result.key
             locationName = result.parentCity?.localizedName ?? "Vaše město"
-            //print("getForecastKey was called")
         } catch let afError as AFError {
             throw CustomError.networkError(afError)
         } catch {
@@ -212,7 +206,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         actualWeather = actualWeatherData
         weatherIconNumber = actualWeatherData[0].weatherIcon
         isDayTime = actualWeatherData[0].isDayTime
-        //print("getActualWeatherData was called")
         
         return actualWeatherData
     }
@@ -367,7 +360,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     
     // Constraints
     func setupConstraintsForCompactWidthRegularHeight() -> [NSLayoutConstraint] {
-       // print("Compact Width - Regular Height.....was activated")
         // Set up constraints for iPhone portrait
         return [
             
@@ -435,7 +427,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     
     func setupConstraintsForCompactWidthCompactHeight() -> [NSLayoutConstraint] {
         // Set up constraints for iPhone landscape
-       // print("Compact Width - Compact Height.....was activated")
         return[
             backgroundImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             backgroundImage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
@@ -504,7 +495,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     
     func setupConstraintsForRegularWidthCompactHeight() -> [NSLayoutConstraint] {
         // Set up constraints for iPhone MAX landscape
-      //  print("Regular Width - Compact Height.....was activated")
         return [
             
             backgroundImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -574,7 +564,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     
     func setupConstraintsForRegularWidthRegularHeight() -> [NSLayoutConstraint] {
         // Set up constraints for iPad landscape
-      //  print("Regular Width - Regular Height.....was activated")
         return [
             backgroundImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             backgroundImage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
