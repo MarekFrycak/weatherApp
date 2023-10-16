@@ -627,4 +627,87 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         ]
     }
 
+
+
+
+    
+    func getWeatherImageSetup() {
+        return [
+            weatherImage.topAnchor.constraint(
+                equalTo: actualWeatherText1Label.bottomAnchor, constant: 0),
+            weatherImage.leftAnchor.constraint(equalTo: view.leftAnchor),
+            weatherImage.rightAnchor.constraint(equalTo: view.rightAnchor),
+            weatherImage.bottomAnchor.constraint(equalTo: the12HourHeadLineLabel.topAnchor),
+        ]
+    }
+
+    func setupConstraints(deviceType: enum) -> [NSLayoutConstraint] {
+        var localizationLabelWidthAnchor;
+        switch (deviceType) {
+            case 'iPhoneLandscape':
+                localizationLabelWidthAnchor = 10;
+            case 'iPhonePortrait':
+                localizationLabelWidthAnchor = 100;
+        }
+        let weatherImageSetup = getWeatherImageSetup();
+        // Set up constraints for iPhone portrait
+        return [
+            
+            backgroundImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            backgroundImage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            backgroundImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backgroundImage.leftAnchor.constraint(equalTo: view.leftAnchor),
+            backgroundImage.rightAnchor.constraint(equalTo: view.rightAnchor),
+            backgroundImage.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            localizationLabel.centerXAnchor.constraint(
+                equalTo: view.centerXAnchor),
+            localizationLabel.topAnchor.constraint(
+                equalTo: view.topAnchor, constant: 100),
+            localizationLabel.widthAnchor.constraint(
+                equalToConstant: localizationLabelWidthAnchor),
+            localizationLabel.heightAnchor.constraint(
+                equalToConstant: 15),
+            
+            mainActualTemperatureLabel.centerXAnchor.constraint(
+                equalTo: view.centerXAnchor),
+            mainActualTemperatureLabel.topAnchor.constraint(
+                equalTo: view.topAnchor, constant: 70),
+            mainActualTemperatureLabel.widthAnchor.constraint(
+                equalToConstant: 400),
+            mainActualTemperatureLabel.heightAnchor.constraint(
+                equalToConstant: 250),
+            
+            actualWeatherText1Label.centerXAnchor.constraint(
+                equalTo: view.centerXAnchor),
+            actualWeatherText1Label.topAnchor.constraint(
+                equalTo: view.topAnchor, constant: 250),
+            actualWeatherText1Label.widthAnchor.constraint(
+                equalToConstant: 300),
+            actualWeatherText1Label.heightAnchor.constraint(
+                equalToConstant: 35),
+            
+            weatherImageSetup,
+            
+            the12HourHeadLineLabel.centerXAnchor.constraint(
+                equalTo: view.centerXAnchor),
+            the12HourHeadLineLabel.bottomAnchor.constraint(
+                equalTo: the12HourCollectionView.topAnchor, constant: 0),
+            the12HourHeadLineLabel.widthAnchor.constraint(
+                equalToConstant: 350),
+            the12HourHeadLineLabel.heightAnchor.constraint(
+                equalToConstant: 20),
+            
+            the12HourCollectionView.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            the12HourCollectionView.leftAnchor.constraint(
+                equalTo: view.leftAnchor, constant: 20),
+            the12HourCollectionView.rightAnchor.constraint(
+                equalTo: view.rightAnchor, constant: -20),
+            the12HourCollectionView.heightAnchor.constraint(
+                equalToConstant: 140),
+        ]
+    }
 }
