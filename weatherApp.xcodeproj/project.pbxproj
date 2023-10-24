@@ -8,13 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		4014B55B2A2E565D00DD37B6 /* ActualWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4014B55A2A2E565D00DD37B6 /* ActualWeather.swift */; };
+		4040604B2AE402B500CCC480 /* MockJsonLocalizedInfo.json in Resources */ = {isa = PBXBuildFile; fileRef = 4040604A2AE402B500CCC480 /* MockJsonLocalizedInfo.json */; };
+		4040604D2AE40B0C00CCC480 /* MockJsonActualWeatherData.json in Resources */ = {isa = PBXBuildFile; fileRef = 4040604C2AE40B0C00CCC480 /* MockJsonActualWeatherData.json */; };
+		4040604F2AE6B78A00CCC480 /* MockJson12HourForecastData.json in Resources */ = {isa = PBXBuildFile; fileRef = 4040604E2AE6B78A00CCC480 /* MockJson12HourForecastData.json */; };
 		40631F1B2A0D5A6B00FE4095 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40631F1A2A0D5A6B00FE4095 /* AppDelegate.swift */; };
 		40631F1D2A0D5A6B00FE4095 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40631F1C2A0D5A6B00FE4095 /* SceneDelegate.swift */; };
 		40631F1F2A0D5A6B00FE4095 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40631F1E2A0D5A6B00FE4095 /* ViewController.swift */; };
 		40631F222A0D5A6B00FE4095 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 40631F202A0D5A6B00FE4095 /* Main.storyboard */; };
 		40631F242A0D5A6C00FE4095 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40631F232A0D5A6C00FE4095 /* Assets.xcassets */; };
 		40631F272A0D5A6C00FE4095 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 40631F252A0D5A6C00FE4095 /* LaunchScreen.storyboard */; };
-		407286AC2AB3A8620016769E /* JSON.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 407286AB2AB3A8620016769E /* JSON.geojson */; };
 		40D962B12A1D436900C7E738 /* Weather.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D962B02A1D436900C7E738 /* Weather.swift */; };
 		40D962B92A1E803400C7E738 /* LocalizedInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D962B82A1E803400C7E738 /* LocalizedInfo.swift */; };
 		40E6EB212AC9FB0000597E17 /* Chocolate Bar Demo.otf in Resources */ = {isa = PBXBuildFile; fileRef = 40E6EB202AC9FB0000597E17 /* Chocolate Bar Demo.otf */; };
@@ -26,6 +28,9 @@
 
 /* Begin PBXFileReference section */
 		4014B55A2A2E565D00DD37B6 /* ActualWeather.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActualWeather.swift; sourceTree = "<group>"; };
+		4040604A2AE402B500CCC480 /* MockJsonLocalizedInfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = MockJsonLocalizedInfo.json; sourceTree = "<group>"; };
+		4040604C2AE40B0C00CCC480 /* MockJsonActualWeatherData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = MockJsonActualWeatherData.json; sourceTree = "<group>"; };
+		4040604E2AE6B78A00CCC480 /* MockJson12HourForecastData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = MockJson12HourForecastData.json; sourceTree = "<group>"; };
 		40631F172A0D5A6B00FE4095 /* weatherApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = weatherApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		40631F1A2A0D5A6B00FE4095 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		40631F1C2A0D5A6B00FE4095 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -34,7 +39,6 @@
 		40631F232A0D5A6C00FE4095 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		40631F262A0D5A6C00FE4095 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		40631F282A0D5A6C00FE4095 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		407286AB2AB3A8620016769E /* JSON.geojson */ = {isa = PBXFileReference; lastKnownFileType = text; path = JSON.geojson; sourceTree = "<group>"; };
 		40D962B02A1D436900C7E738 /* Weather.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weather.swift; sourceTree = "<group>"; };
 		40D962B82A1E803400C7E738 /* LocalizedInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedInfo.swift; sourceTree = "<group>"; };
 		40E6EB202AC9FB0000597E17 /* Chocolate Bar Demo.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Chocolate Bar Demo.otf"; sourceTree = "<group>"; };
@@ -55,6 +59,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		404060502AE6CA6500CCC480 /* MOCK Backup Json Data */ = {
+			isa = PBXGroup;
+			children = (
+				4040604E2AE6B78A00CCC480 /* MockJson12HourForecastData.json */,
+				4040604A2AE402B500CCC480 /* MockJsonLocalizedInfo.json */,
+				4040604C2AE40B0C00CCC480 /* MockJsonActualWeatherData.json */,
+			);
+			path = "MOCK Backup Json Data";
+			sourceTree = "<group>";
+		};
 		405686252AB0875D004A79C8 /* Font */ = {
 			isa = PBXGroup;
 			children = (
@@ -83,11 +97,11 @@
 		40631F192A0D5A6B00FE4095 /* weatherApp */ = {
 			isa = PBXGroup;
 			children = (
-				405686252AB0875D004A79C8 /* Font */,
+				404060502AE6CA6500CCC480 /* MOCK Backup Json Data */,
 				40F6CF6A2A687D9A00540797 /* Cells */,
 				40D962B72A1E801400C7E738 /* Model */,
+				405686252AB0875D004A79C8 /* Font */,
 				40631F1A2A0D5A6B00FE4095 /* AppDelegate.swift */,
-				407286AB2AB3A8620016769E /* JSON.geojson */,
 				40631F1C2A0D5A6B00FE4095 /* SceneDelegate.swift */,
 				40631F1E2A0D5A6B00FE4095 /* ViewController.swift */,
 				40631F202A0D5A6B00FE4095 /* Main.storyboard */,
@@ -190,8 +204,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				40631F272A0D5A6C00FE4095 /* LaunchScreen.storyboard in Resources */,
-				407286AC2AB3A8620016769E /* JSON.geojson in Resources */,
+				4040604D2AE40B0C00CCC480 /* MockJsonActualWeatherData.json in Resources */,
+				4040604B2AE402B500CCC480 /* MockJsonLocalizedInfo.json in Resources */,
 				40631F242A0D5A6C00FE4095 /* Assets.xcassets in Resources */,
+				4040604F2AE6B78A00CCC480 /* MockJson12HourForecastData.json in Resources */,
 				40E6EB212AC9FB0000597E17 /* Chocolate Bar Demo.otf in Resources */,
 				40631F222A0D5A6B00FE4095 /* Main.storyboard in Resources */,
 			);

@@ -19,23 +19,21 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     let weatherImage                = UIImageView()
     let the12HourHeadLineLabel      = UILabel()
     var the12HourCollectionView:      UICollectionView!
-    let backgroundImage             = UIImageView()
     let loadingView                 = UIView()
     let loadingLabel                = UILabel()
     
-    
-    let apiKey = "i8MpoGveIdZPG3gDWasL7a1QVeh0BhrE"
-    //let apiKey = "Br5Tsp8LESxMZWW2ks7RqJIXPWcztpkE"
+    var apiKey1 = Bundle.main.object(forInfoDictionaryKey: "ApiKey1") as? String
+    var apiKey2 = Bundle.main.object(forInfoDictionaryKey: "ApiKey2") as? String
     
     let locationManager = CLLocationManager()
     var locationCityKey = ""
-    var locationName = "Místo neznámé"
+    var locationName = ""
     var actualWeather = [ActualWeatherElement]()
     var the12HourForecast = [The12HourForecastElement]()
     var weatherIconNumber = 1
     var isDayTime = Bool()
-    var curentLatitude: Double = 0 //49.593777
-    var curentLongitude: Double = 0 //17.250879
+    var curentLatitude: Double = 0
+    var curentLongitude: Double = 0
     var currentConstraints: [NSLayoutConstraint] = []
     let customFont = UIFont(name: "Chocolate Bar Demo", size: 60) ?? UIFont.systemFont(ofSize: 60)
     
@@ -56,7 +54,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         the12HourCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         the12HourCollectionView.register(The12HourCollectionViewCell.self, forCellWithReuseIdentifier: "The12HourCollectionViewCell")
     }
-    // Get device location
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
             let latitude    = location.coordinate.latitude
@@ -67,20 +65,22 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
             getDataWrapper()
         }
     }
-    // locationManager error handling
+    
+    @objc func getDataWrapper() {
+        Task {
+            await fetchData()
+        }
+    }
+    
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Error getting location: \(error.localizedDescription)")
-        // Check for errors
         if let clError = error as? CLError {
             switch clError.code {
             case .locationUnknown:
-                // Temporary error. Might want to wait.
                 print("Location is currently unknown but Core Location will keep trying.")
             case .denied:
-                // User has denied location services for this app or they are restricted globally in settings.
                 print("Access to location services was denied by the user.")
             case .network:
-                // General, network-related error.
                 print("Network error occurred while trying to fetch location.")
             default:
                 print("Another location error occurred: \(error.localizedDescription)")
@@ -88,18 +88,178 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         }
     }
     
-    @objc func getDataWrapper() {
-        Task {
-            await fetchData()
-            
+    func getLocalizedInfo() async throws {
+        var resolvedURL: URL?
+        
+         if let url1 = URL(string:"https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=\(String(describing: apiKey1!))&q=\(curentLatitude)%2C\(curentLongitude)&language=cs-cz") {
+            resolvedURL = url1
+            do {
+                
+                let result = try await AF.request(url1, method: .get).serializingDecodable(LocalizedInfo.self).value
+                locationCityKey = result.key
+                locationName = result.parentCity?.localizedName ?? "Vaše město"
+                return
+            } catch {
+                print("Error fetching with Api Key 1: \(error)")
+            }
+        }
+        
+        if let url2 = URL(string: "https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=\(String(describing: apiKey2!))&q=\(curentLatitude)%2C\(curentLongitude)&language=cs-cz") {
+            resolvedURL = url2
+            do {
+                let result = try await AF.request(url2, method: .get).serializingDecodable(LocalizedInfo.self).value
+                locationCityKey = result.key
+                locationName = result.parentCity?.localizedName ?? "Vaše město"
+            } catch {
+                print("Error fetching with Api Key 2: \(error)")
+            }
+        }
+
+        do {
+            let mockData = try fetchLocalizedMockData()
+            print("getLocalizedInfo used backup JSON data")
+            locationCityKey = mockData.key
+            locationName = mockData.parentCity?.localizedName ?? "Vaše město"
+        } catch {
+            throw error
+        }
+        return
+    }
+    
+    func fetchLocalizedMockData() throws -> LocalizedInfo {
+        guard let url = Bundle.main.url(forResource: "MockJsonLocalizedInfo", withExtension: "json") else {
+            throw CustomError.invalidURL
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            let mockInfo = try decoder.decode(LocalizedInfo.self, from: data)
+            return mockInfo
+        } catch {
+             throw error
         }
     }
     
+    enum CustomError: Error {
+        case invalidURL
+        case networkError(AFError)
+    }
+    
+    func getActualWeatherData() async throws {
+        var resolvedURL: URL?
+        
+        if let url1 = URL(string:"https://dataservice.accuweather.com/currentconditions/v1/\(locationCityKey)?apikey=\(String(describing: apiKey1!))&language=cs-cz") {
+            resolvedURL = url1
+
+            do {
+                 let actualWeatherData = try await AF.request(url1, method: .get).serializingDecodable([ActualWeatherElement].self).value
+                actualWeather = actualWeatherData
+                weatherIconNumber = actualWeatherData[0].weatherIcon
+                isDayTime = actualWeatherData[0].isDayTime
+                return
+            } catch {
+                print("Error fetching with Api Key 1: \(error)")
+            }
+    }
+        
+        if let url2 = URL(string: "https://dataservice.accuweather.com/currentconditions/v1/\(locationCityKey)?apikey=\(String(describing: apiKey2!))&language=cs-cz") {
+            resolvedURL = url2
+            do {
+                let actualWeatherData = try await AF.request(url2, method: .get).serializingDecodable([ActualWeatherElement].self).value
+                    actualWeather = actualWeatherData
+                    weatherIconNumber = actualWeatherData[0].weatherIcon
+                    isDayTime = actualWeatherData[0].isDayTime
+                    return
+                
+            } catch {
+                print("Error fetching with Api Key 2: \(error)")
+             }
+            }
+            do {
+                let mockData = try fetchActualWeatherMockData()
+                print("getActualWeatherData used backup JSON data")
+                actualWeather = mockData
+                weatherIconNumber = actualWeather[0].weatherIcon
+                isDayTime = actualWeather[0].isDayTime
+            } catch {
+             throw error
+            }
+        return
+    }
+
+    func fetchActualWeatherMockData() throws -> [ActualWeatherElement] {
+        guard let url = Bundle.main.url(forResource: "MockJsonActualWeatherData", withExtension: "json") else {
+            print("fetchActualWeatherMockData chyba v url")
+            throw CustomError.invalidURL
+        }
+        
+            do {
+                let data = try Data(contentsOf: url)
+                let decoder = JSONDecoder()
+                let mockInfo = try decoder.decode([ActualWeatherElement].self, from: data)
+                return mockInfo
+            } catch {
+                throw error
+            }
+    }
+    
+    func get12hourForecastData() async throws -> [The12HourForecastElement] {
+        var resolvedURL: URL?
+
+        if let url1 = URL(string: "https://dataservice.accuweather.com/forecasts/v1/hourly/12hour/\(locationCityKey)?apikey=\(String(describing: apiKey1!))&metric=true") {
+            resolvedURL = url1
+            do {
+             let the12HourForecastData =  try await AF.request(url1, method: .get).serializingDecodable([The12HourForecastElement].self).value
+                the12HourForecast = the12HourForecastData
+                return the12HourForecastData
+            } catch {
+                print("Error get12hourForecastData fetching with Api Key 1: \(error)")
+             }
+        }
+
+        if let url2 = URL(string: "https://dataservice.accuweather.com/forecasts/v1/hourly/12hour/\(locationCityKey)?apikey=\(String(describing: apiKey2!))&metric=true") {
+            resolvedURL = url2
+
+            do {
+                 let the12HourForecastData =  try await AF.request(url2, method: .get).serializingDecodable([The12HourForecastElement].self).value
+                the12HourForecast = the12HourForecastData
+                print("Api Key 2 was used in URL get12hourForecastData")
+                return the12HourForecastData
+            } catch {
+                print("Error get12hourForecastData fetching with Api Key 2: \(error)")
+            }
+        }
+        
+        do {
+            let mockData = try fetch12HourForecastMockData()
+            the12HourForecast = mockData
+            print("get12hourForecastData used backup JSON data")
+        } catch {
+            throw error
+        }
+        return the12HourForecast
+     }
+
+    func fetch12HourForecastMockData() throws -> [The12HourForecastElement] {
+        guard let url = Bundle.main.url(forResource: "MockJson12HourForecastData", withExtension: "json") else {
+             throw CustomError.invalidURL
+        }
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            let mockInfo = try decoder.decode([The12HourForecastElement].self, from: data)
+            return mockInfo
+        } catch {
+            throw error
+        }
+    }
+            
     @MainActor
     func fetchData() async {
         do {
             self.addSubviews()
-            try await getLocatizedInfo()
+            try await getLocalizedInfo()
             try await getActualWeatherData()
             try await get12hourForecastData()
             DispatchQueue.main.async {
@@ -114,7 +274,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     }
     
     func addSubviews() {
-        view.addSubview(backgroundImage)
         view.addSubview(weatherImage)
         view.addSubview(mainActualTemperatureLabel)
         view.addSubview(actualWeatherText1Label)
@@ -130,13 +289,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         loadingView.topAnchor.constraint(equalTo: view.topAnchor).isActive       = true
         loadingView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         
-        loadingLabel.text       = "n a č í t á n í"
+        loadingLabel.text       = "n a č í t á m"
         loadingLabel.textColor  = .white
         loadingLabel.font       = customFont.withSize(30)
         loadingLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         loadingLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         
-        backgroundImage.translatesAutoresizingMaskIntoConstraints             = false
         weatherImage.translatesAutoresizingMaskIntoConstraints                = false
         actualWeatherText1Label.translatesAutoresizingMaskIntoConstraints     = false
         mainActualTemperatureLabel.translatesAutoresizingMaskIntoConstraints  = false
@@ -147,14 +305,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         loadingLabel.translatesAutoresizingMaskIntoConstraints                = false
     }
 
-    // this function animated fontsize change to make app looks better
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         
         if traitCollection.horizontalSizeClass != previousTraitCollection?.horizontalSizeClass || traitCollection.verticalSizeClass != previousTraitCollection?.verticalSizeClass {
-            // Update the font size based on the new traitCollection
             let newFontSize: CGFloat = calculateNewFontSize()
-            // Animate the font size change
             UIView.transition(with: mainActualTemperatureLabel, duration: 0.5, options: .transitionCrossDissolve, animations: {
                 self.mainActualTemperatureLabel.font = self.customFont.withSize(newFontSize)
             }, completion: nil)
@@ -162,7 +317,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
             UIView.transition(with: actualWeatherText1Label, duration: 0.5, options: .transitionCrossDissolve, animations: {
                 self.actualWeatherText1Label.font = self.customFont.withSize(newFontSize)
             }, completion: nil)
-            
             setupUI()
             styleUI()
         }
@@ -175,53 +329,23 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
             return 100.0
         }
     }
-
-    // Alamofire
-    func getLocatizedInfo() async throws {
-        guard let url = URL(string:"https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=\(apiKey)&q=\(curentLatitude)%2C\(curentLongitude)&language=cs-cz")
-        else {
-            throw CustomError.invalidURL
-        }
-        
-        do {
-            let result = try await AF.request(url, method: .get).serializingDecodable(LocalizedInfo.self).value
-            locationCityKey = result.key
-            locationName = result.parentCity?.localizedName ?? "Vaše město"
-        } catch let afError as AFError {
-            throw CustomError.networkError(afError)
-        } catch {
-            throw error
-        }
-    }
-    
-    enum CustomError: Error {
-        case invalidURL
-        case networkError(AFError)
-
-    }
-    
-    func getActualWeatherData() async throws -> [ActualWeatherElement] {
-        let url = URL(string: "https://dataservice.accuweather.com/currentconditions/v1/\(locationCityKey)?apikey=\(apiKey)&language=cs-cz")
-        let actualWeatherData =  try await AF.request(url!, method: .get).serializingDecodable([ActualWeatherElement].self).value
-        actualWeather = actualWeatherData
-        weatherIconNumber = actualWeatherData[0].weatherIcon
-        isDayTime = actualWeatherData[0].isDayTime
-        
-        return actualWeatherData
-    }
     
     func setupUI() {
         NSLayoutConstraint.deactivate(currentConstraints)
         
         switch (traitCollection.horizontalSizeClass, traitCollection.verticalSizeClass) {
         case (.compact, .regular):
-            currentConstraints = setupConstraintsForCompactWidthRegularHeight()
+            setupCommonConstraints()
+            setupConstraintsForCompactWidthRegularHeight()
         case (.compact, .compact):
-            currentConstraints = setupConstraintsForCompactWidthCompactHeight()
+            setupCommonConstraints()
+            setupConstraintsForCompactWidthCompactHeight()
         case (.regular, .compact):
-            currentConstraints = setupConstraintsForRegularWidthCompactHeight()
+            setupCommonConstraints()
+            setupConstraintsForRegularWidthCompactHeight()
         case (.regular, .regular):
-            currentConstraints = setupConstraintsForRegularWidthRegularHeight()
+            setupCommonConstraints()
+            setupConstraintsForRegularWidthRegularHeight()
         default:
             break
         }
@@ -231,7 +355,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     
     func styleUI() {
         setBackgroundColor()
-        backgroundImage.contentMode = .scaleAspectFill
         
         self.localizationLabel.text     = self.locationName.description
         localizationLabel.textColor     = .white
@@ -247,9 +370,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         mainActualTemperatureLabel.textAlignment                     = .center
         mainActualTemperatureLabel.shadowColor                       = .black
         mainActualTemperatureLabel.font                              = customFont.withSize(150)
-        mainActualTemperatureLabel.adjustsFontForContentSizeCategory = true
-        mainActualTemperatureLabel.adjustsFontSizeToFitWidth         = true
-        mainActualTemperatureLabel.minimumScaleFactor                = 0.5
         applyShadow(to: mainActualTemperatureLabel.layer)
 
         self.actualWeatherText1Label.text     = self.actualWeather[0].weatherText
@@ -277,15 +397,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         layer.shadowRadius  = 10
         layer.shadowOpacity = 0.6
         layer.masksToBounds = false
-    }
-
-    
-    func get12hourForecastData() async throws -> [The12HourForecastElement] {
-        let url = URL(string: "https://dataservice.accuweather.com/forecasts/v1/hourly/12hour/\(locationCityKey)?apikey=\(apiKey)&metric=true")
-        let the12HourForecastData =  try await AF.request(url!, method: .get).serializingDecodable([The12HourForecastElement].self).value
-        the12HourForecast = the12HourForecastData
-        
-        return the12HourForecastData
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -341,9 +452,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
                 self.loadingLabel.isHidden = true
             }
         }
-        
     }
-    
     
     func setBackgroundColor() {
         let weatherIcon = actualWeather[0].weatherIcon
@@ -357,274 +466,89 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         }
     }
     
-    
-    // Constraints
-    func setupConstraintsForCompactWidthRegularHeight() -> [NSLayoutConstraint] {
-        // Set up constraints for iPhone portrait
-        return [
+    func setupCommonConstraints() {
+        currentConstraints = [
+            // localizationLabel Constraints
+            localizationLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            localizationLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            localizationLabel.widthAnchor.constraint(equalToConstant: 200),
+            localizationLabel.heightAnchor.constraint(equalToConstant: 30),
             
-            backgroundImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            backgroundImage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            backgroundImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backgroundImage.leftAnchor.constraint(equalTo: view.leftAnchor),
-            backgroundImage.rightAnchor.constraint(equalTo: view.rightAnchor),
-            backgroundImage.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            // mainActualTemperatureLabel Constraints
+            mainActualTemperatureLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            mainActualTemperatureLabel.topAnchor.constraint(equalTo: localizationLabel.bottomAnchor, constant: 0),
+            mainActualTemperatureLabel.widthAnchor.constraint(equalToConstant: 300),
             
-            localizationLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            localizationLabel.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 100),
-            localizationLabel.widthAnchor.constraint(
-                equalToConstant: 200),
-            localizationLabel.heightAnchor.constraint(
-                equalToConstant: 15),
+            // actualWeatherText1Label Constraints
+            actualWeatherText1Label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            actualWeatherText1Label.topAnchor.constraint(equalTo: mainActualTemperatureLabel.bottomAnchor, constant: 5),
+            actualWeatherText1Label.widthAnchor.constraint(equalToConstant: 300),
             
-            mainActualTemperatureLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            mainActualTemperatureLabel.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 70),
-            mainActualTemperatureLabel.widthAnchor.constraint(
-                equalToConstant: 400),
-            mainActualTemperatureLabel.heightAnchor.constraint(
-                equalToConstant: 250),
+            // the12HourHeadLineLabel Constraints
+            the12HourHeadLineLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            the12HourHeadLineLabel.bottomAnchor.constraint(equalTo: the12HourCollectionView.topAnchor, constant: 0),
+            the12HourHeadLineLabel.widthAnchor.constraint(equalToConstant: 350),
             
-            actualWeatherText1Label.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            actualWeatherText1Label.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 250),
-            actualWeatherText1Label.widthAnchor.constraint(
-                equalToConstant: 300),
-            actualWeatherText1Label.heightAnchor.constraint(
-                equalToConstant: 35),
-            
-            weatherImage.topAnchor.constraint(
-                equalTo: actualWeatherText1Label.bottomAnchor, constant: 0),
-            weatherImage.leftAnchor.constraint(equalTo: view.leftAnchor),
-            weatherImage.rightAnchor.constraint(equalTo: view.rightAnchor),
-            weatherImage.bottomAnchor.constraint(equalTo: the12HourHeadLineLabel.topAnchor),
-            
-            the12HourHeadLineLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            the12HourHeadLineLabel.bottomAnchor.constraint(
-                equalTo: the12HourCollectionView.topAnchor, constant: 0),
-            the12HourHeadLineLabel.widthAnchor.constraint(
-                equalToConstant: 350),
-            the12HourHeadLineLabel.heightAnchor.constraint(
-                equalToConstant: 20),
-            
-            the12HourCollectionView.bottomAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
-            the12HourCollectionView.leftAnchor.constraint(
-                equalTo: view.leftAnchor, constant: 20),
-            the12HourCollectionView.rightAnchor.constraint(
-                equalTo: view.rightAnchor, constant: -20),
-            the12HourCollectionView.heightAnchor.constraint(
-                equalToConstant: 140),
+            // the12HourCollectionView Constraints
+            the12HourCollectionView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 20),
+            the12HourCollectionView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20)
         ]
     }
-    
-    func setupConstraintsForCompactWidthCompactHeight() -> [NSLayoutConstraint] {
-        // Set up constraints for iPhone landscape
-        return[
-            backgroundImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            backgroundImage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            backgroundImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backgroundImage.leftAnchor.constraint(equalTo: view.leftAnchor),
-            backgroundImage.rightAnchor.constraint(equalTo: view.rightAnchor),
-            backgroundImage.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            weatherImage.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 10),
-            weatherImage.leftAnchor.constraint(
-                equalTo: view.leftAnchor, constant: 80),
-            weatherImage.widthAnchor.constraint(
-                equalToConstant: 215),
-            weatherImage.heightAnchor.constraint(
-                equalToConstant: 215),
-            
-            mainActualTemperatureLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            mainActualTemperatureLabel.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 30),
-            mainActualTemperatureLabel.widthAnchor.constraint(
-                equalToConstant: 400),
-            mainActualTemperatureLabel.heightAnchor.constraint(
-                equalToConstant: 120),
-            
-            actualWeatherText1Label.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            actualWeatherText1Label.topAnchor.constraint(
-                equalTo: mainActualTemperatureLabel.bottomAnchor, constant: 0),
-            actualWeatherText1Label.widthAnchor.constraint(
-                equalTo: view.widthAnchor, multiplier: 0.5),
-            actualWeatherText1Label.heightAnchor.constraint(
-                equalToConstant: 30),
-            
-            localizationLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            localizationLabel.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 20),
-            localizationLabel.widthAnchor.constraint(
-                equalToConstant: 200),
-            localizationLabel.heightAnchor.constraint(
-                equalToConstant: 30),
-            
-            the12HourHeadLineLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            the12HourHeadLineLabel.bottomAnchor.constraint(
-                equalTo: the12HourCollectionView.topAnchor, constant: 0),
-            the12HourHeadLineLabel.widthAnchor.constraint(
-                equalToConstant: 350),
-            the12HourHeadLineLabel.heightAnchor.constraint(
-                equalToConstant: 20),
-            
-            the12HourCollectionView.bottomAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
-            the12HourCollectionView.leftAnchor.constraint(
-                equalTo: view.leftAnchor, constant: 20),
-            the12HourCollectionView.rightAnchor.constraint(
-                equalTo: view.rightAnchor, constant: -50),
-            the12HourCollectionView.heightAnchor.constraint(
-                equalToConstant: 140),
-        ]
-    }
-    
-    func setupConstraintsForRegularWidthCompactHeight() -> [NSLayoutConstraint] {
-        // Set up constraints for iPhone MAX landscape
-        return [
-            
-            backgroundImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            backgroundImage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            backgroundImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backgroundImage.leftAnchor.constraint(equalTo: view.leftAnchor),
-            backgroundImage.rightAnchor.constraint(equalTo: view.rightAnchor),
-            backgroundImage.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            weatherImage.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 10),
-            weatherImage.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 80),
-           
-            weatherImage.widthAnchor.constraint(
-                equalToConstant: 270),
-            weatherImage.heightAnchor.constraint(
-                equalToConstant: 270),
-            
-            mainActualTemperatureLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            mainActualTemperatureLabel.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 30),
-            mainActualTemperatureLabel.widthAnchor.constraint(
-                equalToConstant: 400),
-            mainActualTemperatureLabel.heightAnchor.constraint(
-                equalToConstant: 150),
-            
-            actualWeatherText1Label.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            actualWeatherText1Label.topAnchor.constraint(
-                equalTo: mainActualTemperatureLabel.bottomAnchor, constant: 0),
-            actualWeatherText1Label.widthAnchor.constraint(
-                equalTo: view.widthAnchor, multiplier: 0.5),
-            actualWeatherText1Label.heightAnchor.constraint(
-                equalToConstant: 30),
-            
-            localizationLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            localizationLabel.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 20),
-            localizationLabel.widthAnchor.constraint(
-                equalToConstant: 200),
-            localizationLabel.heightAnchor.constraint(
-                equalToConstant: 30),
-            
-            the12HourHeadLineLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            the12HourHeadLineLabel.bottomAnchor.constraint(
-                equalTo: the12HourCollectionView.topAnchor, constant: 0),
-            the12HourHeadLineLabel.widthAnchor.constraint(
-                equalToConstant: 350),
-            the12HourHeadLineLabel.heightAnchor.constraint(
-                equalToConstant: 25),
-            
-            the12HourCollectionView.bottomAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
-            the12HourCollectionView.leftAnchor.constraint(
-                equalTo: view.leftAnchor, constant: 20),
-            the12HourCollectionView.rightAnchor.constraint(
-                equalTo: view.rightAnchor, constant: -50),
-            the12HourCollectionView.heightAnchor.constraint(
-                equalToConstant: 140),
-        ]
-    }
-    
-    func setupConstraintsForRegularWidthRegularHeight() -> [NSLayoutConstraint] {
-        // Set up constraints for iPad landscape
-        return [
-            backgroundImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            backgroundImage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            backgroundImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backgroundImage.leftAnchor.constraint(equalTo: view.leftAnchor),
-            backgroundImage.rightAnchor.constraint(equalTo: view.rightAnchor),
-            backgroundImage.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            weatherImage.topAnchor.constraint(
-                equalTo: actualWeatherText1Label.bottomAnchor, constant: 0),
-            weatherImage.leftAnchor.constraint(equalTo: view.leftAnchor),
-            weatherImage.rightAnchor.constraint(equalTo: view.rightAnchor),
-            weatherImage.bottomAnchor.constraint(equalTo: the12HourHeadLineLabel.topAnchor),
-            
-            mainActualTemperatureLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            mainActualTemperatureLabel.topAnchor.constraint(
-                equalTo: view.topAnchor, constant: 50),
-            mainActualTemperatureLabel.widthAnchor.constraint(
-                equalToConstant: 400),
-            mainActualTemperatureLabel.heightAnchor.constraint(
-                equalToConstant: 110),
 
-            actualWeatherText1Label.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            actualWeatherText1Label.topAnchor.constraint(
-                equalTo: mainActualTemperatureLabel.bottomAnchor, constant: 0),
-            actualWeatherText1Label.widthAnchor.constraint(
-                equalToConstant: 300),
-            actualWeatherText1Label.heightAnchor.constraint(
-                equalToConstant: 35),
-            
-            localizationLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            localizationLabel.bottomAnchor.constraint(
-                equalTo: mainActualTemperatureLabel.topAnchor, constant: 0),
-            localizationLabel.widthAnchor.constraint(
-                equalToConstant: 200),
-            localizationLabel.heightAnchor.constraint(
-                equalToConstant: 15),
-            
-            the12HourHeadLineLabel.centerXAnchor.constraint(
-                equalTo: view.centerXAnchor),
-            the12HourHeadLineLabel.bottomAnchor.constraint(
-                equalTo: the12HourCollectionView.topAnchor, constant: 0),
-            the12HourHeadLineLabel.widthAnchor.constraint(
-                equalToConstant: 350),
-            the12HourHeadLineLabel.heightAnchor.constraint(
-                equalToConstant: 20),
-            
-            the12HourCollectionView.bottomAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
-            the12HourCollectionView.leftAnchor.constraint(
-                equalTo: view.leftAnchor, constant: 20),
-            the12HourCollectionView.rightAnchor.constraint(
-                equalTo: view.rightAnchor, constant: -20),
-            the12HourCollectionView.heightAnchor.constraint(
-                equalToConstant: 140),
+    func setupConstraintsForCompactWidthRegularHeight() -> [NSLayoutConstraint] {
+            currentConstraints += [
+            weatherImage.topAnchor.constraint(equalTo: actualWeatherText1Label.bottomAnchor, constant: 0),
+            weatherImage.leftAnchor.constraint(equalTo: view.leftAnchor),
+            weatherImage.rightAnchor.constraint(equalTo: view.rightAnchor),
+            weatherImage.bottomAnchor.constraint(equalTo: the12HourHeadLineLabel.topAnchor),
+            mainActualTemperatureLabel.heightAnchor.constraint(equalToConstant: 150),
+            actualWeatherText1Label.heightAnchor.constraint(equalToConstant: 30),
+            the12HourHeadLineLabel.heightAnchor.constraint(equalToConstant: 20),
+            the12HourCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            the12HourCollectionView.heightAnchor.constraint(equalToConstant: 140)
         ]
+        return currentConstraints
+    }
+
+    func setupConstraintsForCompactWidthCompactHeight() -> [NSLayoutConstraint] {
+            currentConstraints += [
+            weatherImage.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
+            weatherImage.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 80),
+            weatherImage.widthAnchor.constraint(equalToConstant: 215),
+            weatherImage.heightAnchor.constraint(equalToConstant: 215),
+            mainActualTemperatureLabel.heightAnchor.constraint(equalToConstant: 120),
+            actualWeatherText1Label.heightAnchor.constraint(equalToConstant: 30),
+            the12HourHeadLineLabel.heightAnchor.constraint(equalToConstant: 20),
+            the12HourCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            the12HourCollectionView.heightAnchor.constraint(equalToConstant: 140)
+        ]
+        return currentConstraints
+    }
+
+    func setupConstraintsForRegularWidthCompactHeight() -> [NSLayoutConstraint] {
+            currentConstraints += [
+            weatherImage.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
+            weatherImage.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 80),
+            weatherImage.widthAnchor.constraint(equalToConstant: 270),
+            weatherImage.heightAnchor.constraint(equalToConstant: 270),
+            mainActualTemperatureLabel.heightAnchor.constraint(equalToConstant: 150),
+            actualWeatherText1Label.heightAnchor.constraint(equalToConstant: 30),
+            the12HourHeadLineLabel.heightAnchor.constraint(equalToConstant: 25),
+            the12HourCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            the12HourCollectionView.heightAnchor.constraint(equalToConstant: 140)
+        ]
+        return currentConstraints
+    }
+
+    func setupConstraintsForRegularWidthRegularHeight() -> [NSLayoutConstraint] {
+          currentConstraints +=  [
+            weatherImage.topAnchor.constraint(equalTo: actualWeatherText1Label.bottomAnchor, constant: 0),
+            mainActualTemperatureLabel.heightAnchor.constraint(equalToConstant: 110),
+            actualWeatherText1Label.heightAnchor.constraint(equalToConstant: 35),
+            the12HourHeadLineLabel.heightAnchor.constraint(equalToConstant: 20),
+            the12HourCollectionView.heightAnchor.constraint(equalToConstant: 140)
+        ]
+        return currentConstraints
     }
 
 }
