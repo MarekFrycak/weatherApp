@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>ApiKey1</key>
+	<string>i8MpoGveIdZPG3gDWasL7a1QVeh0BhrE</string>
+	<key>ApiKey2</key>
+	<string>Br5Tsp8LESxMZWW2ks7RqJIXPWcztpkE</string>
 	<key>INIntentsSupported</key>
 	<array>
 		<string>Intent</string>
