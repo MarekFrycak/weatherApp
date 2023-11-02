@@ -337,19 +337,15 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         case (.compact, .regular):
             setupCommonConstraints()
             setupConstraintsForCompactWidthRegularHeight()
-            print("compact regular")
         case (.compact, .compact):
             setupCommonConstraints()
             setupConstraintsForCompactWidthCompactHeight()
-            print("compact compact")
         case (.regular, .compact):
             setupCommonConstraints()
             setupConstraintsForRegularWidthCompactHeight()
-            print("regular compact")
         case (.regular, .regular):
             setupCommonConstraints()
             setupConstraintsForRegularWidthRegularHeight()
-            print("regular regular")
         default:
             break
         }
