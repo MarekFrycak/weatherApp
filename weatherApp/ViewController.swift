@@ -326,7 +326,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         if traitCollection.horizontalSizeClass == .compact && traitCollection.verticalSizeClass == .regular {
             return 100
         } else {
-            return 100.0
+            return 100
         }
     }
     
@@ -337,15 +337,19 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         case (.compact, .regular):
             setupCommonConstraints()
             setupConstraintsForCompactWidthRegularHeight()
+            print("compact regular")
         case (.compact, .compact):
             setupCommonConstraints()
             setupConstraintsForCompactWidthCompactHeight()
+            print("compact compact")
         case (.regular, .compact):
             setupCommonConstraints()
             setupConstraintsForRegularWidthCompactHeight()
+            print("regular compact")
         case (.regular, .regular):
             setupCommonConstraints()
             setupConstraintsForRegularWidthRegularHeight()
+            print("regular regular")
         default:
             break
         }
@@ -359,7 +363,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         self.localizationLabel.text     = self.locationName.description
         localizationLabel.textColor     = .white
         localizationLabel.shadowColor   = .black
-        localizationLabel.font          = customFont.withSize(20)
+        localizationLabel.font          = customFont.withSize(25)
         localizationLabel.textAlignment = .center
         applyShadow(to: localizationLabel.layer)
         
@@ -369,14 +373,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         mainActualTemperatureLabel.textColor                         = .white
         mainActualTemperatureLabel.textAlignment                     = .center
         mainActualTemperatureLabel.shadowColor                       = .black
-        mainActualTemperatureLabel.font                              = customFont.withSize(150)
+        mainActualTemperatureLabel.font                              = customFont.withSize(140)
         applyShadow(to: mainActualTemperatureLabel.layer)
 
         self.actualWeatherText1Label.text     = self.actualWeather[0].weatherText
         actualWeatherText1Label.textColor     = .white
         actualWeatherText1Label.shadowColor   = .black
         actualWeatherText1Label.textAlignment = .center
-        actualWeatherText1Label.font          = customFont.withSize(30)
+        actualWeatherText1Label.font          = customFont.withSize(25)
         applyShadow(to: actualWeatherText1Label.layer)
         
         weatherImage.image               = UIImage(named: weatherIconNumber.description)
@@ -387,7 +391,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
         the12HourHeadLineLabel.textAlignment = .center
         the12HourHeadLineLabel.textColor     = .white
         the12HourHeadLineLabel.shadowColor   = .black
-        the12HourHeadLineLabel.font          = customFont.withSize(20)
+        the12HourHeadLineLabel.font          = customFont.withSize(25)
         applyShadow(to: the12HourHeadLineLabel.layer)
     }
     
@@ -481,7 +485,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
             
             // actualWeatherText1Label Constraints
             actualWeatherText1Label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            actualWeatherText1Label.topAnchor.constraint(equalTo: mainActualTemperatureLabel.bottomAnchor, constant: 5),
+            actualWeatherText1Label.topAnchor.constraint(equalTo: mainActualTemperatureLabel.bottomAnchor, constant: 0),
             actualWeatherText1Label.widthAnchor.constraint(equalToConstant: 300),
             
             // the12HourHeadLineLabel Constraints
@@ -518,7 +522,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
             weatherImage.heightAnchor.constraint(equalToConstant: 215),
             mainActualTemperatureLabel.heightAnchor.constraint(equalToConstant: 120),
             actualWeatherText1Label.heightAnchor.constraint(equalToConstant: 30),
-            the12HourHeadLineLabel.heightAnchor.constraint(equalToConstant: 20),
+            the12HourHeadLineLabel.heightAnchor.constraint(equalToConstant: 30),
             the12HourCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
             the12HourCollectionView.heightAnchor.constraint(equalToConstant: 140)
         ]
@@ -543,11 +547,15 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     func setupConstraintsForRegularWidthRegularHeight() -> [NSLayoutConstraint] {
           currentConstraints +=  [
             weatherImage.topAnchor.constraint(equalTo: actualWeatherText1Label.bottomAnchor, constant: 0),
-            mainActualTemperatureLabel.heightAnchor.constraint(equalToConstant: 110),
+            weatherImage.leftAnchor.constraint(equalTo: view.leftAnchor),
+            weatherImage.rightAnchor.constraint(equalTo: view.rightAnchor),
+            weatherImage.bottomAnchor.constraint(equalTo: the12HourHeadLineLabel.topAnchor),
+            mainActualTemperatureLabel.heightAnchor.constraint(equalToConstant: 120),
             actualWeatherText1Label.heightAnchor.constraint(equalToConstant: 35),
             the12HourHeadLineLabel.heightAnchor.constraint(equalToConstant: 20),
-            the12HourCollectionView.heightAnchor.constraint(equalToConstant: 140)
-        ]
+            the12HourHeadLineLabel.heightAnchor.constraint(equalToConstant: 20),
+            the12HourCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            the12HourCollectionView.heightAnchor.constraint(equalToConstant: 140)        ]
         return currentConstraints
     }
 
