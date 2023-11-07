@@ -203,7 +203,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UICollectionV
     @MainActor
     func fetchData() async {
         do {
-            self.addSubviews()
+            addSubviews()
             try await getLocalizedInfo()
             try await getActualWeatherData()
             try await getForecastData()
