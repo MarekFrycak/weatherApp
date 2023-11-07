@@ -7,7 +7,6 @@ import Foundation
 
 // MARK: - Key
 struct LocalizedInfo: Codable {
-
     let key: String
     let localizedName, englishName, primaryPostalCode: String?
     let region, country: Country

@@ -18,7 +18,6 @@ struct Weather: Codable {
 
 // MARK: - DailyForecast
 struct DailyForecast: Codable {
-
     let epochDate: Int?
     let temperature: Temperature?
     let day, night: Day?
@@ -26,7 +25,6 @@ struct DailyForecast: Codable {
     let mobileLink, link: String?
 
     enum CodingKeys: String, CodingKey {
-
         case epochDate = "EpochDate"
         case temperature = "Temperature"
         case day = "Day"
@@ -75,9 +73,7 @@ struct Imum: Codable {
 
 // MARK: - Headline
 struct Headline: Codable {
-
     let text: String?
-
 
     enum CodingKeys: String, CodingKey {
         case text = "Text"

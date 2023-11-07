@@ -3,16 +3,6 @@
 //
 //   let actualWeather = try? JSONDecoder().decode(ActualWeather.self, from: jsonData)
 
-//
-// To parse values from Alamofire responses:
-//
-//   Alamofire.request(url).responseActualWeatherElement { response in
-//     if let actualWeatherElement = response.result.value {
-//       ...
-//     }
-//   }
-
-
 import Foundation
 
 // MARK: - ActualWeatherElement
@@ -21,8 +11,6 @@ struct ActualWeatherElement: Codable {
     let epochTime: Int
     let weatherText: String
     let weatherIcon: Int
-  //  let hasPrecipitation: Bool
- //   let precipitationType: JSONNull?
     let isDayTime: Bool
     let temperature2: Temperature2?
     let mobileLink, link: String
@@ -32,8 +20,6 @@ struct ActualWeatherElement: Codable {
         case epochTime = "EpochTime"
         case weatherText = "WeatherText"
         case weatherIcon = "WeatherIcon"
-  //      case hasPrecipitation = "HasPrecipitation"
-  //      case precipitationType = "PrecipitationType"
         case isDayTime = "IsDayTime"
         case temperature2 = "Temperature"
         case mobileLink = "MobileLink"

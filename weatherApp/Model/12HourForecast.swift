@@ -2,7 +2,6 @@
 // To parse the JSON, add this file to your project and do:
 //
 //   let the12HourForecast = try? JSONDecoder().decode(The12HourForecast.self, from: jsonData)
-
 //
 // To parse values from Alamofire responses:
 //
@@ -27,7 +26,6 @@ struct The12HourForecastElement: Decodable {
     let precipitationType, precipitationIntensity: String?
 
     enum CodingKeys: String, CodingKey {
-   //     case dateTime = "DateTime"
         case epochDateTime = "EpochDateTime"
         case weatherIcon = "WeatherIcon"
         case iconPhrase = "IconPhrase"
