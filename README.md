@@ -1,7 +1,4 @@
 # weatherApp
-
-WeatherApp Readme
-
 created by: Marek Fryčák
 
 Introduction
